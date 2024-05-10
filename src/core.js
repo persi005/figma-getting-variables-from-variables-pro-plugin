@@ -1,19 +1,22 @@
-const $textareaInput = document.getElementById('textarea:input')
-const $textareaOutput = document.getElementById('textarea:output')
+this.setListeners()
+
+function setListeners() {
+    document
+        .getElementById('button:generate-variables')
+        .addEventListener('click', this.onGenerateButtonClick.bind(this))
+    document.getElementById('button:copy-variables').addEventListener('click', this.onCopyButtonClick.bind(this))
+}
 
 function onTextareaChange() {
     this.resetTextareaErrors()
     this.resetErrors()
 }
 
-const $generateButton = document.getElementById('button:generate-variables')
-$generateButton.addEventListener('click', this.onGenerateButtonClick.bind(this))
-
 function onGenerateButtonClick() {
     this.resetTextareaErrors()
     this.resetErrors()
 
-    const value = $textareaInput.value.trim()
+    const value = document.getElementById('textarea:input').value.trim()
     if (!value) {
         this.setTextareaError('textarea:input')
         this.updateInfoText('generate-text', "There's no json code in the textarea above.", true)
@@ -35,7 +38,7 @@ function onGenerateButtonClick() {
             }
         }
     }
-    $textareaOutput.value = outputString
+    document.getElementById('textarea:output').value = outputString
 
     this.updateInfoText('generate-text', 'Your variables have been generated.', false)
 }
@@ -73,13 +76,11 @@ function generateVariables(obj) {
     return strArr
 }
 
-const $copyButton = document.getElementById('button:copy-variables')
-$copyButton.addEventListener('click', this.onCopyButtonClick.bind(this))
-
 async function onCopyButtonClick() {
     this.resetTextareaErrors()
     this.resetErrors()
 
+    const $textareaOutput = document.getElementById('textarea:output')
     const output = $textareaOutput.value
 
     const isBadContent = new Set([$textareaOutput.hasAttribute('data-error'), output === ''])
