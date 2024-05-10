@@ -1,55 +1,53 @@
 const $textareaInput = document.getElementById('textarea:input')
 const $textareaOutput = document.getElementById('textarea:output')
 
-const $copyButton = document.getElementById('button:copy-variables')
-$copyButton.addEventListener('click', this.onCopyButtonClick.bind(this))
-
-function onCopyButtonClick() {
+function onTextareaChange() {
+    this.resetTextareaErrors()
     this.resetErrors()
-
-    const contentToCopy = new Set([$textareaOutput.hasAttribute('data-error'), $textareaOutput.value === ''])
-    if (contentToCopy.has(false)) {
-        return this.updateErrorText('copy-error-text', "There's nothing to copy.")
-    }
-}
-
-function updateErrorText(id, message) {
-    const $copyErrorText = document.getElementById(id)
-    $copyErrorText.innerText = message
-    $copyErrorText.classList.toggle('hidden', false)
-}
-
-function resetErrors() {
-    document.getElementById('copy-error-text').classList.toggle('hidden', true)
-    document.getElementById('generate-error-text').classList.toggle('hidden', true)
 }
 
 const $generateButton = document.getElementById('button:generate-variables')
 $generateButton.addEventListener('click', this.onGenerateButtonClick.bind(this))
 
 function onGenerateButtonClick() {
+    this.resetTextareaErrors()
     this.resetErrors()
 
     const value = $textareaInput.value.trim()
     if (!value) {
-        return this.updateErrorText('generate-error-text', "There's no json code in the textarea above.")
+        this.setTextareaError('textarea:input')
+        this.updateInfoText('generate-text', "There's no json code in the textarea above.", true)
+        return
     }
 
     if (!this.isJSON(value) || (value[0] !== '{' && value[0] !== '[')) {
-        return this.changeOutputTextarea('Invalid JSON', true)
+        this.setTextareaError('textarea:input')
+        this.updateInfoText('generate-text', 'Invalid JSON', true)
+        return
     }
 
     let outputString = ''
     for (const varSet of JSON.parse(value)) {
         for (const property in varSet) {
-            for (const x of this.getVariables(varSet[property]['modes']['Mode 1'])) {
+            for (const x of this.generateVariables(varSet[property]['modes']['Mode 1'])) {
                 if (outputString !== '') outputString += '\n'
                 outputString += `--${x};`
             }
         }
     }
+    $textareaOutput.value = outputString
 
-    this.changeOutputTextarea(outputString)
+    this.updateInfoText('generate-text', 'Your variables have been generated.', false)
+}
+
+function isJSON(value) {
+    try {
+        JSON.parse(value)
+    } catch (err) {
+        return false
+    }
+
+    return true
 }
 
 function generateVariables(obj) {
@@ -57,7 +55,7 @@ function generateVariables(obj) {
     for (const property in obj) {
         const value = obj[property]['$value']
         if (!value) {
-            for (const str of this.getVariables(obj[property])) {
+            for (const str of this.generateVariables(obj[property])) {
                 strArr.push(`${property}-${str}`)
             }
         } else {
@@ -75,30 +73,57 @@ function generateVariables(obj) {
     return strArr
 }
 
-function isJSON(value) {
-    try {
-        JSON.parse(value)
-    } catch (err) {
-        return false
+const $copyButton = document.getElementById('button:copy-variables')
+$copyButton.addEventListener('click', this.onCopyButtonClick.bind(this))
+
+async function onCopyButtonClick() {
+    this.resetTextareaErrors()
+    this.resetErrors()
+
+    const output = $textareaOutput.value
+
+    const isBadContent = new Set([$textareaOutput.hasAttribute('data-error'), output === ''])
+    if (isBadContent.has(true)) {
+        this.setTextareaError('textarea:output')
+        this.updateInfoText('copy-text', "There's nothing to copy.", true)
+        return
     }
 
-    return true
+    const res = await navigator.clipboard.writeText(output)
+    if (res instanceof DOMException) {
+        this.updateInfoText('copy-text', 'Failed to copy.', true)
+        return
+    }
+    this.updateInfoText('copy-text', 'Your variables have been copied.', false)
 }
 
-function changeOutputTextarea(output, isError = false) {
-    const errorClasses = ['border-red-600', 'border-2', 'text-red-600']
-    const defaultClasses = ['border-gray-200']
+function updateInfoText(id, text, isError = false) {
+    const $infoText = document.getElementById(id)
+    $infoText.innerText = text
+    $infoText.classList.toggle('hidden', false)
 
-    $textareaOutput.value = output
     if (isError) {
-        $textareaOutput.classList.remove(...defaultClasses)
-        $textareaOutput.classList.add(...errorClasses)
+        $infoText.classList.add('text-red-600')
+        $infoText.classList.remove('text-gray-600')
     } else {
-        $textareaOutput.classList.remove(...errorClasses)
-        $textareaOutput.classList.add(...defaultClasses)
+        $infoText.classList.remove('text-red-600')
+        $infoText.classList.add('text-gray-600')
     }
+}
 
-    $textareaOutput.toggleAttribute('data-error', isError)
-    $textareaOutput.toggleAttribute('disabled', isError)
-    $textareaOutput.toggleAttribute('readonly', !isError)
+function setTextareaError(id) {
+    const $textarea = document.getElementById(id)
+    $textarea.classList.add('border-red-600')
+}
+
+function resetTextareaErrors() {
+    for (const id of ['textarea:input', 'textarea:output']) {
+        const $textarea = document.getElementById(id)
+        $textarea.classList.remove('border-red-600')
+    }
+}
+
+function resetErrors() {
+    document.getElementById('copy-text').classList.toggle('hidden', true)
+    document.getElementById('generate-text').classList.toggle('hidden', true)
 }
