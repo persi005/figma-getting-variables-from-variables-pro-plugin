@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Get variables from Figma</title>
+
+        <link href="../src/output.css" rel="stylesheet" />
+    </head>
+
+    <body class="h-dvh grid place-items-center">
+        <div class="container w-5/6">
+            <h1 class="pb-6 text-xl">Converter from JSON by "Variables Pro" plugin into CSS variables</h1>
+
+            <div class="container grid gap-3">
+                <p>JSON by "Variables Pro":</p>
+
+                <textarea
+                    class="h-36 w-full p-3 border rounded-lg font-mono text-xs border-gray-200 resize-none"
+                    id="textarea:input"
+                    placeholder="Enter a json code"
+                ></textarea>
+            </div>
+
+            <div class="mt-4 flex flex-row items-center justify-end gap-4">
+                <p class="text-sm text-red-600 hidden" id="generate-error-text"></p>
+
+                <button
+                    class="flex-shrink-0 self-start py-1 px-4 rounded-full bg-blue-100 hover:bg-blue-200 text-blue-600 transition-colors"
+                    id="button:generate-variables"
+                >
+                    Generate variables
+                </button>
+            </div>
+
+            <hr class="my-6 border-dashed border-gray-200" />
+
+            <div class="container grid gap-3">
+                <p>Your CSS variables:</p>
+
+                <textarea
+                    class="h-36 w-full p-3 border rounded-lg font-mono text-xs border-gray-200 resize-none cursor-default"
+                    id="textarea:output"
+                    placeholder="Your variables will appear here"
+                    readonly
+                ></textarea>
+            </div>
+
+            <div class="mt-4 flex flex-row items-center justify-end gap-4">
+                <p class="text-sm text-red-600 hidden" id="copy-error-text"></p>
+
+                <button
+                    class="flex-shrink-0 self-start py-1 px-4 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors disabled:bg-white"
+                    id="button:copy-variables"
+                >
+                    Copy variables
+                </button>
+            </div>
+        </div>
+
+        <script src="../src/core.js"></script>
+    </body>
+</html>
